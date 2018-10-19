@@ -1,29 +1,33 @@
-## Nginx Dockerfile
-
-
-This repository contains **Dockerfile** of [Nginx](http://nginx.org/) for [Docker](https://www.docker.com/)'s [automated build](https://registry.hub.docker.com/u/dockerfile/nginx/) published to the public [Docker Hub Registry](https://registry.hub.docker.com/).
-
-
-### Base Docker Image
-
-* [dockerfile/ubuntu](http://dockerfile.github.io/#/ubuntu)
-
-
-### Installation
-
-1. Install [Docker](https://www.docker.com/).
-
-2. Download [automated build](https://registry.hub.docker.com/u/dockerfile/nginx/) from public [Docker Hub Registry](https://registry.hub.docker.com/): `docker pull dockerfile/nginx`
-
-   (alternatively, you can build an image from Dockerfile: `docker build -t="dockerfile/nginx" github.com/dockerfile/nginx`)
-
-
-### Usage
-
-    docker run -d -p 80:80 dockerfile/nginx
-
-#### Attach persistent/shared directories
-
-    docker run -d -p 80:80 -v <sites-enabled-dir>:/etc/nginx/conf.d -v <certs-dir>:/etc/nginx/certs -v <log-dir>:/var/log/nginx -v <html-dir>:/var/www/html dockerfile/nginx
-
-After few seconds, open `http://<host>` to see the welcome page.
+1.docker network create lnmpr
+2.docker-compose up --build -d
+3.#nginx/conf.d/default.conf 设置成php容器的目录，否则无法解析php
+本docker-compose nginx 挂载为 ./app:/usr/share/nginx/html
+php 挂载为 ./app:/var/www/html
+4.例如1
+-----------------------------------------------
+location / {
+   root /usr/share/nginx/html; #注意路径
+   index index.html index.htm index.php;
+}
+location ~ .php$ {
+   root /var/www/html; #这里为php容器挂载路径注意否则无法解析php
+   fastcgi_pass php:9000;
+   fastcgi_index index.php;
+   fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+   include fastcgi_params;
+}
+----------------------------------------------
+例如2
+-----------------------------------------------
+location / {
+   root /usr/share/nginx/html/test; #注意路径
+   index index.html index.htm index.php;
+}
+location ~ .php$ {
+   root /var/www/html/test; #和上面的路径对应
+   fastcgi_pass php:9000;
+   fastcgi_index index.php;
+   fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+   include fastcgi_params;
+}
+-----------------------------------------------
